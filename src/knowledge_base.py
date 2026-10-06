@@ -73,9 +73,22 @@ OFFLINE_SURVIVAL_DATABASE: Dict[str, Dict[str, Any]] = {
 
 def lookup_offline_emergency(keyword: str) -> Dict[str, Any]:
     """Find immediate offline triage knowledge when no network is available."""
-    keyword_clean = keyword.lower().strip()
+    kw = keyword.lower().strip()
+    
+    # Mycological and botanical danger triggers
+    if any(w in kw for w in ["mushroom", "volva", "cup", "white gill", "amanita", "death cap"]):
+        return OFFLINE_SURVIVAL_DATABASE["death_cap"]
+    if any(w in kw for w in ["ivy", "urushiol", "three leaves", "blister", "sumac"]):
+        return OFFLINE_SURVIVAL_DATABASE["poison_ivy"]
+    if any(w in kw for w in ["snake", "bite", "fang", "venom", "viper", "rattler"]):
+        return OFFLINE_SURVIVAL_DATABASE["snake_bite"]
+    if any(w in kw for w in ["cold", "shiver", "freeze", "sleet", "hypothermia", "numb"]):
+        return OFFLINE_SURVIVAL_DATABASE["hypothermia"]
+    if any(w in kw for w in ["lightning", "thunder", "storm", "tempest", "ridge"]):
+        return OFFLINE_SURVIVAL_DATABASE["lightning_storm"]
+
     for key, data in OFFLINE_SURVIVAL_DATABASE.items():
-        if key in keyword_clean or keyword_clean in key:
+        if key in kw or kw in key:
             return data
     
     # Generic offline wilderness safety guidance
