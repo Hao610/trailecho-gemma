@@ -35,6 +35,7 @@ st.markdown("""
         border-radius: 12px;
         margin-bottom: 1.2rem;
         border: 1px solid #40916c;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
     .hud-title {
         font-size: 2.1rem;
@@ -74,6 +75,9 @@ st.markdown("""
         padding: 4px 10px;
         border-radius: 6px;
         font-weight: bold;
+    }
+    .specimen-btn {
+        margin-bottom: 5px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -149,7 +153,7 @@ with tab1:
             const btn = document.getElementById('micBtn');
             const status = document.getElementById('micStatus');
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                status.innerText = "Speech API available in Chrome/Safari/Edge";
+                status.innerText = "Speech API ready";
             } else {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 const recognition = new SpeechRecognition();
@@ -165,7 +169,6 @@ with tab1:
                     const transcript = event.results[0][0].transcript;
                     status.innerText = "Captured: " + transcript;
                     btn.style.background = "#2d6a4f";
-                    // Pass to streamlit textarea if possible
                 };
                 recognition.onerror = () => {
                     status.innerText = "Voice input idle.";
@@ -174,6 +177,16 @@ with tab1:
             }
         </script>
         """, height=70)
+
+        st.markdown("##### 🧪 1-Click Test Specimens (Zero-Effort Evaluation)")
+        spec_col1, spec_col2 = st.columns(2)
+        load_specimen = None
+        if spec_col1.button("🍄 Specimen: Amanita (Death Cap)", use_container_width=True):
+            load_specimen = "assets/specimens/death_cap.jpg"
+            st.session_state["default_query"] = "Identified smooth greenish-white mushroom with free white gills, drooping skirt ring, and swollen cup volva at base."
+        if spec_col2.button("🌿 Specimen: Toxicodendron (Poison Ivy)", use_container_width=True):
+            load_specimen = "assets/specimens/poison_ivy.jpg"
+            st.session_state["default_query"] = "Cluster of three leaflets with notched margins, reddish stem joints, growing along the trail edge."
 
         # Quick Scenarios
         quick_scenarios = [
@@ -189,9 +202,10 @@ with tab1:
             if btn_cols[idx % 2].button(f"Scenario {idx+1}", help=text, use_container_width=True):
                 selected_text = text
 
+        initial_val = selected_text if selected_text else st.session_state.get("default_query", "Found a cluster of smooth white mushrooms under an oak tree with a distinct ring around the stem and a cup-like sac at the ground level.")
         user_query = st.text_area(
             "Observation / Situation Description:",
-            value=selected_text if selected_text else "Found a cluster of smooth white mushrooms under an oak tree with a distinct ring around the stem and a cup-like sac at the ground level.",
+            value=initial_val,
             height=85
         )
 
@@ -208,7 +222,11 @@ with tab1:
             pil_image = None
             if uploaded_img is not None:
                 pil_image = Image.open(uploaded_img)
-                st.image(pil_image, caption="Uploaded Trail Specimen", width=260)
+            elif load_specimen and os.path.exists(load_specimen):
+                pil_image = Image.open(load_specimen)
+
+            if pil_image:
+                st.image(pil_image, caption="Field Specimen under Forensic Gemma 2 Inspection", width=260)
 
             with st.spinner("Analyzing via Gemma 2 Multimodal Safety Engine..."):
                 triage_res = analyze_wilderness_multimodal(
@@ -268,7 +286,7 @@ with tab1:
                 for item in lookalikes:
                     st.markdown(f"- {item}")
         else:
-            st.info("👆 Tap a scenario or describe what you see, then click 'Broadcast to Earphones' to simulate screen-free audio navigation.")
+            st.info("👆 Tap a scenario or specimen, then click 'Broadcast to Earphones' to experience screen-free audio safety.")
 
 # ----------------- TAB 2: TabPFN Micro-Climate & Hypothermia ML -----------------
 with tab2:
@@ -330,7 +348,7 @@ with tab2:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# ----------------- TAB 3: Trail Sentinel Route Map -----------------
+# ----------------- TAB 3: Trail Sentinel Route Map & Elevation Profile -----------------
 with tab3:
     st.subheader(f"🧭 {trail_meta['trail_name']}")
     st.write(f"🔊 **Audio Sentinel Cue**: *\"{trail_meta['audio_sentinel_cue']}\"*")
@@ -340,6 +358,42 @@ with tab3:
     t_c2.metric("Elevation Gain", f"+{trail_meta['total_elevation_gain_m']} m")
     t_c3.metric("Peak Altitude", f"{trail_meta['peak_elevation_m']} m")
     t_c4.metric("Turnaround Cutoff", f"{trail_meta['recommended_turnaround_hours']} hrs")
+
+    # Interactive Elevation Topography Profile
+    dist_points = np.linspace(0, trail_meta["total_distance_km"], 50)
+    base_elev = trail_meta["peak_elevation_m"] - trail_meta["total_elevation_gain_m"]
+    # Synthesize topographical bell-curve elevation climb
+    elev_profile = base_elev + (trail_meta["total_elevation_gain_m"] * np.sin(np.pi * (dist_points / trail_meta["total_distance_km"])))
+
+    topo_fig = go.Figure()
+    topo_fig.add_trace(go.Scatter(
+        x=dist_points,
+        y=elev_profile,
+        mode="lines",
+        fill="tozeroy",
+        name="Topographical Elevation Profile",
+        line=dict(color="#2d6a4f", width=3),
+        fillcolor="rgba(45, 106, 79, 0.3)"
+    ))
+
+    # Add Danger Zones
+    topo_fig.add_hline(
+        y=trail_meta["peak_elevation_m"] - 150,
+        line_dash="dot",
+        line_color="#d90429",
+        annotation_text="⚠️ Exposed Alpine Zone (Lightning & Hypothermia Risk)",
+        annotation_position="top left"
+    )
+
+    topo_fig.update_layout(
+        title=f"Topographical Elevation Profile: {trail_meta['trail_name']}",
+        template="plotly_dark",
+        xaxis_title="Distance along Trail (km)",
+        yaxis_title="Elevation (meters MSL)",
+        height=320,
+        margin=dict(l=40, r=40, t=40, b=40)
+    )
+    st.plotly_chart(topo_fig, use_container_width=True)
 
     st.write("##### 💧 Key Backcountry Waypoints & Hazards")
     st.markdown(f"- **Water Purification Sources**: {', '.join(trail_meta['water_points'])}")
