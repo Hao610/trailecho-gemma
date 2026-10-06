@@ -79,6 +79,14 @@ flowchart TD
 - Pre-loaded with classic backcountry routes: Mount Rainier Skyline Loop, Half Dome Cables, and Tour du Mont Blanc.
 - Automatically calculates **Sunset Turnaround Deadlines**, high-altitude lightning hazard horizons, and water cache points.
 
+### 5. ☀️ Solar Sunset Countdown & Pandolf Metabolic Energy Planner
+- Calculates golden-hour deadlines and headlamp enforcement horizons to prevent night stranding.
+- Computes Pandolf equation calorie expenditure, minimum water carry (L), and electrolyte needs based on backpack load and elevation climb.
+
+### 6. 🚨 Emergency 3kHz Morse SOS Whistle & Offline Field Journal
+- Emits high-penetration 2800-3000Hz Morse SOS (`· · · — — — · · ·`) acoustic signals for SAR signaling.
+- Persists all field observations in local flash memory, exportable to JSON for park rangers.
+
 ---
 
 ## 🧪 1-Click Interactive Test Specimens
