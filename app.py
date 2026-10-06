@@ -126,6 +126,77 @@ with st.sidebar:
                                help="A rapid drop below -2.5 hPa indicates an incoming alpine squall.")
     wind_speed = st.slider("Wind Exposure (km/h)", 0.0, 90.0, 32.0, step=1.0)
 
+    st.markdown("---")
+    st.subheader("🚨 Emergency SOS Whistle")
+    st.caption("Broadcasts 3000Hz high-penetration Morse SOS (· · · — — — · · ·) into the wild:")
+    
+    st.components.v1.html("""
+    <div style="text-align: center;">
+        <button id="sosBtn" style="background: linear-gradient(135deg, #d90429 0%, #ef233c 100%); color: white; border: 2px solid #ff4d6d; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(217,4,41,0.4);">
+            📢 Sound 3kHz SOS Whistle
+        </button>
+        <div id="sosAlert" style="color: #ffb3c1; font-size: 12px; margin-top: 6px; display: none;">
+            ⚠️ SOS Signal Active: 3 Short, 3 Long, 3 Short
+        </div>
+    </div>
+    <script>
+        let isPlaying = false;
+        let audioCtx = null;
+        
+        document.getElementById('sosBtn').onclick = () => {
+            const btn = document.getElementById('sosBtn');
+            const alertText = document.getElementById('sosAlert');
+            
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            if (isPlaying) {
+                isPlaying = false;
+                btn.innerText = "📢 Sound 3kHz SOS Whistle";
+                btn.style.background = "linear-gradient(135deg, #d90429 0%, #ef233c 100%)";
+                alertText.style.display = "none";
+                return;
+            }
+            
+            isPlaying = true;
+            btn.innerText = "🛑 Stop Emergency Whistle";
+            btn.style.background = "#2b2d42";
+            alertText.style.display = "block";
+            
+            // Morse SOS sequence: 3 short (0.15s), 3 long (0.45s), 3 short (0.15s)
+            const morseTimings = [
+                { dur: 0.15, pause: 0.1 }, { dur: 0.15, pause: 0.1 }, { dur: 0.15, pause: 0.3 }, // S
+                { dur: 0.45, pause: 0.1 }, { dur: 0.45, pause: 0.1 }, { dur: 0.45, pause: 0.3 }, // O
+                { dur: 0.15, pause: 0.1 }, { dur: 0.15, pause: 0.1 }, { dur: 0.15, pause: 1.0 }  // S
+            ];
+            
+            function playMorseBeep(index) {
+                if (!isPlaying) return;
+                const step = morseTimings[index % morseTimings.length];
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(2800, audioCtx.currentTime); // High penetration wilderness frequency
+                gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + step.dur);
+                
+                setTimeout(() => {
+                    if (isPlaying) playMorseBeep(index + 1);
+                }, (step.dur + step.pause) * 1000);
+            }
+            
+            playMorseBeep(0);
+        };
+    </script>
+    """, height=85)
+
 # Top Tabs: 1. Audio Sentinel & Vision Triage | 2. TabPFN Micro-Climate ML | 3. Trail Sentinel Route Map
 tab1, tab2, tab3 = st.tabs([
     "🎧 Screen-Free Audio & Vision Triage",
