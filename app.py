@@ -132,11 +132,11 @@ with st.sidebar:
     st.caption("Broadcasts 3000Hz high-penetration Morse SOS (· · · — — — · · ·) into the wild:")
     
     st.components.v1.html("""
-    <div style="text-align: center;">
-        <button id="sosBtn" style="background: linear-gradient(135deg, #d90429 0%, #ef233c 100%); color: white; border: 2px solid #ff4d6d; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(217,4,41,0.4);">
+    <div style="text-align: center; padding: 2px;">
+        <button id="sosBtn" style="background: linear-gradient(135deg, #d90429 0%, #ef233c 100%); color: white; border: 2px solid #ff4d6d; padding: 10px 14px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(217,4,41,0.4);">
             📢 Sound 3kHz SOS Whistle
         </button>
-        <div id="sosAlert" style="color: #ffb3c1; font-size: 12px; margin-top: 6px; display: none;">
+        <div id="sosAlert" style="color: #ffb3c1; font-size: 11.5px; line-height: 1.4; margin-top: 8px; font-weight: 600; display: none;">
             ⚠️ SOS Signal Active: 3 Short, 3 Long, 3 Short
         </div>
     </div>
@@ -196,7 +196,7 @@ with st.sidebar:
             playMorseBeep(0);
         };
     </script>
-    """, height=85)
+    """, height=105)
 
 # Top Tabs: 1. Audio Sentinel & Vision Triage | 2. TabPFN Micro-Climate ML | 3. Trail Sentinel Route Map | 4. Field Journal
 tab1, tab2, tab3, tab4 = st.tabs([
