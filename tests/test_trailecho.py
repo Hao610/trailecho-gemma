@@ -44,3 +44,19 @@ def test_gemma_multimodal_offline():
     assert res["hazard_level"] in ["CRITICAL", "LETHAL"]
     assert "amatoxins" in res["voice_cue"].lower() or "death cap" in res["topic"].lower()
     assert len(res["immediate_actions"]) > 0
+
+
+def test_field_journal():
+    from src.field_journal import TrailFieldJournal
+    journal = TrailFieldJournal()
+    entry = journal.add_entry(
+        topic="Death Cap",
+        hazard_level="LETHAL",
+        voice_cue="Extreme Hazard",
+        elevation=1400,
+        temp_c=12.0,
+        notes="Found near roots"
+    )
+    assert entry["id"] == "log-001"
+    assert len(journal.logs) == 1
+    assert "log-001" in journal.export_json()

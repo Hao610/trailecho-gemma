@@ -15,6 +15,7 @@ from src.tabpfn_climate import climate_oracle
 from src.audio_engine import synthesize_voice_alert
 from src.trail_analyzer import BENCHMARK_TRAILS, analyze_trail_profile
 from src.knowledge_base import OFFLINE_SURVIVAL_DATABASE
+from src.field_journal import journal_singleton
 
 load_dotenv()
 
@@ -197,11 +198,12 @@ with st.sidebar:
     </script>
     """, height=85)
 
-# Top Tabs: 1. Audio Sentinel & Vision Triage | 2. TabPFN Micro-Climate ML | 3. Trail Sentinel Route Map
-tab1, tab2, tab3 = st.tabs([
+# Top Tabs: 1. Audio Sentinel & Vision Triage | 2. TabPFN Micro-Climate ML | 3. Trail Sentinel Route Map | 4. Field Journal
+tab1, tab2, tab3, tab4 = st.tabs([
     "🎧 Screen-Free Audio & Vision Triage",
     "📈 TabPFN Micro-Climate & Hypothermia Forecaster",
-    "🧭 Backcountry Trail Route Sentinel"
+    "🧭 Backcountry Trail Route Sentinel",
+    "📓 Offline Field Journal & Hazard Audit"
 ])
 
 # ----------------- TAB 1: Screen-Free Audio & Vision Triage -----------------
@@ -356,6 +358,17 @@ with tab1:
                 st.error("🍄 **Lethal / Toxic Lookalikes Warning:**")
                 for item in lookalikes:
                     st.markdown(f"- {item}")
+
+            if st.button("📝 Log This Finding to Offline Journal", use_container_width=True):
+                entry = journal_singleton.add_entry(
+                    topic=triage_res.get('topic', 'Observation'),
+                    hazard_level=hazard,
+                    voice_cue=triage_res.get('voice_cue', ''),
+                    elevation=elevation,
+                    temp_c=temp,
+                    notes=user_query
+                )
+                st.success(f"Saved observation `{entry['id']}` to trail flash memory!")
         else:
             st.info("👆 Tap a scenario or specimen, then click 'Broadcast to Earphones' to experience screen-free audio safety.")
 
@@ -478,3 +491,35 @@ with tab3:
             st.markdown(f"**Audio Alert**: *\"{v['voice_alert']}\"*")
             for s in v["action_steps"]:
                 st.markdown(f"- {s}")
+
+# ----------------- TAB 4: Offline Field Journal & Hazard Audit -----------------
+with tab4:
+    st.subheader("📓 Backcountry Field Journal & Hazard Log")
+    st.caption("All triage events and specimen inspections are persisted here in flash memory for post-trail review.")
+
+    j_col1, j_col2 = st.columns([1.2, 0.8])
+    with j_col1:
+        if not journal_singleton.logs:
+            st.info("No field observations logged yet. Go to Tab 1, run an inspection, and click 'Log This Finding'.")
+        else:
+            for entry in reversed(journal_singleton.logs):
+                h_badge = "🔴" if entry["hazard_level"] in ["CRITICAL", "LETHAL", "HIGH"] else "🟡"
+                with st.expander(f"{h_badge} [{entry['id']}] {entry['topic']} ({entry['timestamp']})"):
+                    st.markdown(f"**Voice Cue Delivered**: *\"{entry['voice_cue']}\"*")
+                    st.markdown(f"**Elevation**: {entry['telemetry']['elevation_m']}m | **Temp**: {entry['telemetry']['temp_c']}°C")
+                    st.caption(f"Notes: {entry['field_notes']}")
+
+    with j_col2:
+        st.subheader("💾 Export & Sync Options")
+        st.caption("When you return to cell coverage, export your field audit for backcountry rangers or emergency SAR:")
+        json_data = journal_singleton.export_json()
+        st.download_button(
+            "📥 Export Trail Audit (JSON)",
+            data=json_data,
+            file_name="trailecho_field_audit.json",
+            mime="application/json",
+            use_container_width=True
+        )
+        if st.button("🗑️ Clear Local Trail Journal", use_container_width=True):
+            journal_singleton.clear()
+            st.rerun()
