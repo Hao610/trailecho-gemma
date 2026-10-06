@@ -7,11 +7,11 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Gemma 2](https://img.shields.io/badge/Open--Source%20AI-Google%20Gemma%202-orange)](https://ai.google.dev/gemma)
 [![ElevenLabs](https://img.shields.io/badge/Voice%20Synthesis-ElevenLabs-black)](https://elevenlabs.io)
-[![Hacktoberfest 2026](https://img.shields.io/badge/Hacktoberfest%202026-Touch%20Grass-8a2be2)](https://dev.to/challenges/hf26)
+[![Hacktoberfest 2026](https://img.shields.io/badge/Hacktoberfest%202026-Touch%20Grass-8a2be2)](https://dev.to/challenges/hacktoberfest-week1-2026-10-05)
 
 ### *Screen-Free, Offline-First Backcountry Companion Engineered for Hikers, Foragers & Trail Runners.*
 
-**Built for the [Hacktoberfest Open-Source AI Challenge: Week 1 (Touch Grass)](https://dev.to/challenges/hf26).**
+**Built for the [Hacktoberfest Open-Source AI Challenge: Week 1 (Touch Grass)](https://dev.to/challenges/hacktoberfest-week1-2026-10-05).**
 
 <img src="cover.jpg" alt="TrailEcho Cover Art" width="850" style="border-radius: 12px; margin: 15px 0;" />
 
