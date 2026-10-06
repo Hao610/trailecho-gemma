@@ -16,6 +16,7 @@ from src.audio_engine import synthesize_voice_alert
 from src.trail_analyzer import BENCHMARK_TRAILS, analyze_trail_profile
 from src.knowledge_base import OFFLINE_SURVIVAL_DATABASE
 from src.field_journal import journal_singleton
+from src.metabolism_daylight import calculate_daylight_horizon, calculate_backcountry_metabolism
 
 load_dotenv()
 
@@ -198,11 +199,12 @@ with st.sidebar:
     </script>
     """, height=105)
 
-# Top Tabs: 1. Audio Sentinel & Vision Triage | 2. TabPFN Micro-Climate ML | 3. Trail Sentinel Route Map | 4. Field Journal
-tab1, tab2, tab3, tab4 = st.tabs([
+# Top Tabs: 1. Audio & Vision | 2. Micro-Climate | 3. Trail Sentinel | 4. Field Journal | 5. Energy & Sunset
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🎧 Screen-Free Audio & Vision Triage",
     "📈 TabPFN Micro-Climate & Hypothermia Forecaster",
     "🧭 Backcountry Trail Route Sentinel",
+    "⚡ Alpine Energy & Sunset Horizon",
     "📓 Offline Field Journal & Hazard Audit"
 ])
 
@@ -492,8 +494,55 @@ with tab3:
             for s in v["action_steps"]:
                 st.markdown(f"- {s}")
 
-# ----------------- TAB 4: Offline Field Journal & Hazard Audit -----------------
+# ----------------- TAB 4: Alpine Energy & Sunset Horizon -----------------
 with tab4:
+    st.subheader("⚡ Alpine Energy, Hydration & Sunset Deadline Tracker")
+    st.caption("Calculates physiological calorie expenditure, minimum water carry, and headlamp enforcement deadlines.")
+
+    e_col1, e_col2 = st.columns(2)
+    with e_col1:
+        st.markdown("##### ☀️ Solar Sunset Countdown")
+        curr_hour = st.slider("Current Trail Time (24h)", 6.0, 22.0, 15.5, step=0.25, format="%.2f hrs", help="e.g. 15.5 = 3:30 PM")
+        sunset_time = st.slider("Local Sunset (24h)", 16.0, 21.0, 18.75, step=0.25, format="%.2f hrs", help="e.g. 18.75 = 6:45 PM")
+        
+        daylight_data = calculate_daylight_horizon(current_hour=curr_hour, sunset_hour=sunset_time)
+        
+        d_status = daylight_data["status"]
+        d_badge = "#d90429" if d_status == "CRITICAL_DUSK" else "#f77f00" if d_status == "GOLDEN_HOUR_WARNING" else "#2d6a4f"
+        
+        st.markdown(f"""
+        <div style="background: #111e17; border-left: 5px solid {d_badge}; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0; color: {d_badge};">Daylight Status: {d_status}</h4>
+            <p style="margin: 0.4rem 0 0 0; color: #d8f3dc; font-size: 0.95rem;">🔊 <i>"{daylight_data['voice_cue']}"</i></p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        dc1, dc2 = st.columns(2)
+        dc1.metric("Sunlight Remaining", daylight_data["remaining_display"])
+        dc2.metric("Turn On Headlamp By", daylight_data["headlamp_deadline"])
+
+    with e_col2:
+        st.markdown("##### 🎒 Pandolf Metabolic & Hydration Model")
+        hiker_wt = st.number_input("Hiker Body Weight (kg)", 40.0, 140.0, 72.0, step=1.0)
+        pack_wt = st.number_input("Backpack / Gear Weight (kg)", 0.0, 45.0, 11.5, step=0.5)
+        
+        metabolic_data = calculate_backcountry_metabolism(
+            hiker_weight_kg=hiker_wt,
+            pack_weight_kg=pack_wt,
+            distance_km=trail_meta["total_distance_km"],
+            elevation_gain_m=trail_meta["total_elevation_gain_m"],
+            temp_celsius=temp
+        )
+        
+        m_col1, m_col2, m_col3 = st.columns(3)
+        m_col1.metric("Est. Calorie Burn", f"{metabolic_data['total_calories_burned_kcal']} kcal")
+        m_col2.metric("Minimum Water", f"{metabolic_data['water_required_liters']} L")
+        m_col3.metric("Electrolytes (Sodium)", f"{metabolic_data['sodium_electrolytes_mg']} mg")
+        
+        st.info(f"🌾 **Carbohydrate Fueling Goal**: Carry at least **{metabolic_data['recommended_carbs_grams']}g** of complex carbs to avoid bonking on steep climbs.")
+
+# ----------------- TAB 5: Offline Field Journal & Hazard Audit -----------------
+with tab5:
     st.subheader("📓 Backcountry Field Journal & Hazard Log")
     st.caption("All triage events and specimen inspections are persisted here in flash memory for post-trail review.")
 

@@ -60,3 +60,20 @@ def test_field_journal():
     assert entry["id"] == "log-001"
     assert len(journal.logs) == 1
     assert "log-001" in journal.export_json()
+
+
+def test_metabolism_and_daylight():
+    from src.metabolism_daylight import calculate_daylight_horizon, calculate_backcountry_metabolism
+    daylight = calculate_daylight_horizon(current_hour=17.5, sunset_hour=18.5)
+    assert daylight["status"] == "CRITICAL_DUSK"
+    assert "Urgent" in daylight["voice_cue"]
+
+    metabolism = calculate_backcountry_metabolism(
+        hiker_weight_kg=70.0,
+        pack_weight_kg=10.0,
+        distance_km=10.0,
+        elevation_gain_m=500.0,
+        temp_celsius=20.0
+    )
+    assert metabolism["total_calories_burned_kcal"] > 800
+    assert metabolism["water_required_liters"] > 1.0
